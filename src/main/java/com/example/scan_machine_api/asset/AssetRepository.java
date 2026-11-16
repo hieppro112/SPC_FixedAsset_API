@@ -50,9 +50,11 @@ public class AssetRepository {
 				factory, positionAA);
 	}
 
+	// Return the asset table's MachineCode: the join ignores case/trailing spaces, but the app
+	// matches tags to the machine list by this exact value.
 	public List<TagDto> findTags() {
 		return jdbc.query("""
-				SELECT r.CodeRFID, r.CodeMachine, f.Factory, f.PositionAA
+				SELECT r.CodeRFID, f.MachineCode AS CodeMachine, f.Factory, f.PositionAA
 				FROM KVH.dbo.FixedAssetRFID r
 				JOIN dbo.F2_FIXED_ASSET f ON f.MachineCode = r.CodeMachine
 				WHERE """ + HAS_AREA,
