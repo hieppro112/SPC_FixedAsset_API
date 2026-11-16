@@ -12,6 +12,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class AssetRepository {
 
+	// Write each query as one text block: text blocks strip trailing spaces, so
+	// concatenating them glues keywords together ("ANDf.PositionAA").
 	private static final String HAS_AREA = "f.PositionAA IS NOT NULL AND LTRIM(RTRIM(f.PositionAA)) <> ''";
 
 	private final JdbcTemplate jdbc;
@@ -31,8 +33,10 @@ public class AssetRepository {
 				SELECT f.Factory, f.PositionAA, COUNT(*) AS Total, COUNT(r.ID) AS Tagged
 				FROM dbo.F2_FIXED_ASSET f
 				LEFT JOIN KVH.dbo.FixedAssetRFID r ON r.CodeMachine = f.MachineCode
-				WHERE f.Factory = ? AND """ + HAS_AREA + """
-				 GROUP BY f.Factory, f.PositionAA ORDER BY f.PositionAA""",
+				WHERE f.Factory = ?
+				  AND f.PositionAA IS NOT NULL AND LTRIM(RTRIM(f.PositionAA)) <> ''
+				GROUP BY f.Factory, f.PositionAA
+				ORDER BY f.PositionAA""",
 				(rs, i) -> new AreaDto(rs.getString("Factory"), rs.getString("PositionAA"),
 						rs.getInt("Total"), rs.getInt("Tagged")),
 				factory);
@@ -57,7 +61,7 @@ public class AssetRepository {
 				SELECT r.CodeRFID, f.MachineCode AS CodeMachine, f.Factory, f.PositionAA
 				FROM KVH.dbo.FixedAssetRFID r
 				JOIN dbo.F2_FIXED_ASSET f ON f.MachineCode = r.CodeMachine
-				WHERE """ + HAS_AREA,
+				WHERE f.PositionAA IS NOT NULL AND LTRIM(RTRIM(f.PositionAA)) <> ''""",
 				(rs, i) -> new TagDto(rs.getString("CodeRFID"), rs.getString("CodeMachine"),
 						rs.getString("Factory"), rs.getString("PositionAA")));
 	}
